@@ -1,0 +1,487 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NetOps | Router Monitoring</title>
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #f1f5f9;
+            color: #1e293b;
+        }
+
+        .layout {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .sidebar {
+            width: 230px;
+            background: #ffffff;
+            border-right: 1px solid #e2e8f0;
+            padding: 28px 18px;
+            flex-shrink: 0;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 20px;
+            font-weight: bold;
+            color: #1e293b;
+            margin-bottom: 45px;
+        }
+
+        .brand-icon {
+            background: #2563eb;
+            color: white;
+            padding: 10px;
+            border-radius: 9px;
+        }
+
+        .menu-label {
+            color: #94a3b8;
+            font-size: 11px;
+            font-weight: bold;
+            letter-spacing: 1.5px;
+            margin: 25px 10px 12px;
+        }
+
+        .menu a {
+            display: block;
+            text-decoration: none;
+            padding: 13px 12px;
+            border-radius: 8px;
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+
+        .menu a.active {
+            background: #eff6ff;
+            color: #2563eb;
+            font-weight: bold;
+        }
+
+        .menu a:hover {
+            background: #f1f5f9;
+        }
+
+        .main {
+            flex: 1;
+            min-width: 0;
+            padding: 35px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 35px;
+            gap: 15px;
+        }
+
+        .topbar h1 {
+            margin: 0;
+            font-size: 26px;
+        }
+
+        .topbar p {
+            color: #64748b;
+            font-size: 14px;
+            margin-bottom: 0;
+        }
+
+        .system-label {
+            background: #dcfce7;
+            color: #15803d;
+            padding: 9px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 18px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 22px;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+
+        .stat-value {
+            font-size: 23px;
+            font-weight: bold;
+            color: #1e293b;
+        }
+
+        .stat-icon {
+            color: #2563eb;
+            font-size: 21px;
+            margin-bottom: 12px;
+        }
+
+        .panel {
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 25px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            gap: 12px;
+        }
+
+        .panel-header h2 {
+            font-size: 17px;
+            margin: 0;
+        }
+
+        .panel-header span {
+            color: #94a3b8;
+            font-size: 12px;
+        }
+
+        .commands {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-bottom: 23px;
+        }
+
+        .command {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            padding: 18px;
+            border-radius: 9px;
+        }
+
+        .command-number {
+            color: #2563eb;
+            font-size: 11px;
+            font-weight: bold;
+            margin-bottom: 12px;
+        }
+
+        .command-name {
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            color: #334155;
+            overflow-wrap: anywhere;
+        }
+
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 13px 22px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #1d4ed8;
+        }
+
+        button:focus-visible {
+            outline: 3px solid #93c5fd;
+            outline-offset: 3px;
+        }
+
+        .result-card {
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            background: white;
+        }
+
+        .result-title {
+            background: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 15px 18px;
+            color: #2563eb;
+            font-family: Consolas, monospace;
+            font-size: 13px;
+            font-weight: bold;
+        }
+
+        pre {
+            margin: 0;
+            padding: 20px;
+            overflow-x: auto;
+            white-space: pre;
+            color: #334155;
+            background: #ffffff;
+            font-family: Consolas, monospace;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .empty {
+            padding: 35px;
+            text-align: center;
+            color: #94a3b8;
+            background: #f8fafc;
+            border: 1px dashed #cbd5e1;
+            border-radius: 10px;
+            font-size: 14px;
+        }
+
+        .error {
+            background: #fef2f2;
+            color: #b91c1c;
+            border: 1px solid #fecaca;
+            padding: 16px;
+            border-radius: 9px;
+            margin-bottom: 22px;
+            font-size: 14px;
+        }
+
+        footer {
+            text-align: center;
+            color: #94a3b8;
+            font-size: 12px;
+            padding: 20px;
+        }
+
+        @media (max-width: 850px) {
+            .sidebar {
+                width: 180px;
+            }
+
+            .commands {
+                grid-template-columns: 1fr;
+            }
+
+            .main {
+                padding: 22px;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .layout {
+                display: block;
+            }
+
+            .sidebar {
+                width: 100%;
+                padding: 15px;
+                border-right: none;
+                border-bottom: 1px solid #e2e8f0;
+            }
+
+            .brand {
+                margin-bottom: 15px;
+            }
+
+            .menu-label {
+                display: none;
+            }
+
+            .menu {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 5px;
+            }
+
+            .menu a {
+                margin: 0;
+            }
+
+            .main {
+                padding: 18px;
+            }
+
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="layout">
+
+    <aside class="sidebar">
+
+        <div class="brand">
+            <div class="brand-icon">N</div>
+            NETOPS
+        </div>
+
+        <div class="menu-label">MAIN MENU</div>
+
+        <nav class="menu">
+            <a href="#overview" class="active">▦ Overview</a>
+            <a href="#commands">⌘ Commands</a>
+            <a href="#results">▤ Results</a>
+        </nav>
+
+        <div class="menu-label">DEVICE</div>
+
+        <nav class="menu">
+            <a href="#overview">◉ Router R1</a>
+        </nav>
+
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar" id="overview">
+            <div>
+                <h1>Network Overview</h1>
+                <p>Monitor and manage your Cisco router diagnostics.</p>
+            </div>
+
+            <div class="system-label">
+                ● Router Configured
+            </div>
+        </header>
+
+        <section class="stats">
+
+            <div class="stat-card">
+                <div class="stat-icon">◈</div>
+                <div class="stat-label">DEVICE NAME</div>
+                <div class="stat-value">Router R1</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⌘</div>
+                <div class="stat-label">AVAILABLE COMMANDS</div>
+                <div class="stat-value">03 Commands</div>
+            </div>
+
+        </section>
+
+        <section class="panel" id="commands">
+
+            <div class="panel-header">
+                <h2>Command Execution</h2>
+                <span>READ-ONLY OPERATIONS</span>
+            </div>
+
+            <div class="commands">
+
+                <div class="command">
+                    <div class="command-number">01 / SYSTEM</div>
+                    <div class="command-name">show version</div>
+                </div>
+
+                <div class="command">
+                    <div class="command-number">02 / INTERFACES</div>
+                    <div class="command-name">show ip interface brief</div>
+                </div>
+
+                <div class="command">
+                    <div class="command-number">03 / CONFIGURATION</div>
+                    <div class="command-name">show running-config</div>
+                </div>
+
+            </div>
+
+            <form method="POST">
+                <button type="submit">Execute All Commands →</button>
+            </form>
+
+        </section>
+
+        {% if error %}
+            <div class="error" role="alert">
+                <strong>Connection Error</strong><br>
+                {{ error }}
+            </div>
+        {% endif %}
+
+        <section id="results">
+
+            <div class="panel-header">
+                <h2>Execution Results</h2>
+                <span>ROUTER OUTPUT</span>
+            </div>
+
+            {% set commands = [
+                "show version",
+                "show ip interface brief",
+                "show running-config"
+            ] %}
+
+            {% if results %}
+
+                {% for command in commands %}
+                    {% if command in results %}
+
+                        <div class="result-card">
+                            <div class="result-title">
+                                {{ command }}
+                            </div>
+
+                            <pre>{{ results[command] }}</pre>
+                        </div>
+
+                    {% endif %}
+                {% endfor %}
+
+            {% elif not error %}
+
+                <div class="empty">
+                    <div style="font-size: 30px; margin-bottom: 12px;">
+                        ⌘
+                    </div>
+
+                    <strong>No execution results yet.</strong>
+
+                    <p>Click Execute All Commands to retrieve router information.</p>
+                </div>
+
+            {% endif %}
+
+        </section>
+
+        <footer>
+            NETOPS Dashboard | Cisco Router Monitoring System
+        </footer>
+
+    </main>
+
+</div>
+
+</body>
+</html>
